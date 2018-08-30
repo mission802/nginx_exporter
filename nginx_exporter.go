@@ -118,7 +118,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 
 	// processed connections
 	parts = strings.Fields(lines[2])
-	if len(parts) != 3 {
+	if len(parts) < 3 {
 		return fmt.Errorf("Unexpected third line: %s", lines[2])
 	}
 	v, err = strconv.Atoi(strings.TrimSpace(parts[0]))
