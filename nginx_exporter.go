@@ -11,7 +11,7 @@ import (
 	"sync"
 
 	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/log"
+	"github.com/prometheus/common/log"
 )
 
 const (
@@ -118,7 +118,7 @@ func (e *Exporter) collect(ch chan<- prometheus.Metric) error {
 
 	// processed connections
 	parts = strings.Fields(lines[2])
-	if len(parts) < 3 {
+	if len(parts) < 2 {
 		return fmt.Errorf("Unexpected third line: %s", lines[2])
 	}
 	v, err = strconv.Atoi(strings.TrimSpace(parts[0]))
@@ -167,7 +167,7 @@ func (e *Exporter) Collect(ch chan<- prometheus.Metric) {
 	e.mutex.Lock() // To protect metrics from concurrent collects.
 	defer e.mutex.Unlock()
 	if err := e.collect(ch); err != nil {
-		log.Printf("Error scraping nginx: %s", err)
+		log.Infof("Error scraping nginx: %s", err)
 		e.scrapeFailures.Inc()
 		e.scrapeFailures.Collect(ch)
 	}
@@ -182,7 +182,7 @@ func main() {
 	exporter := NewExporter(*nginxScrapeURI)
 	prometheus.MustRegister(exporter)
 
-	log.Printf("Starting Server: %s", *listeningAddress)
+	log.Infof("Starting Server: %s", *listeningAddress)
 	http.Handle(*metricsEndpoint, prometheus.Handler())
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`<html>
